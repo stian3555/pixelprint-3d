@@ -59,8 +59,10 @@
             gap: 8px;
             padding: 5px 14px;
             border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
             border: 1.5px solid transparent;
             transition: all .25s;
             cursor: default;
@@ -89,8 +91,10 @@
             border: 1px solid var(--border);
             border-radius: var(--r-sm);
             color: var(--text);
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
             cursor: pointer;
             transition: all .2s;
         }
@@ -156,8 +160,8 @@
 
         #board {
             display: grid;
-            grid-template-columns: repeat(32, 18px);
-            grid-template-rows:    repeat(32, 18px);
+            grid-template-columns: repeat(32, var(--cell, 18px));
+            grid-template-rows:    repeat(32, var(--cell, 18px));
             border: 2px solid var(--border);
             border-radius: 6px;
             cursor: crosshair;
@@ -166,7 +170,7 @@
         }
 
         .cell {
-            width: 18px; height: 18px;
+            width: var(--cell, 18px); height: var(--cell, 18px);
             background: #12121a;
             border-right:  1px solid rgba(255,255,255,.025);
             border-bottom: 1px solid rgba(255,255,255,.025);
@@ -289,8 +293,10 @@
             border: none;
             border-radius: var(--r);
             color: #fff;
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 8px;
             transition: all .2s;
@@ -305,7 +311,10 @@
             border: 1px solid var(--border);
             border-radius: var(--r-sm);
             color: var(--text-dim);
-            font-size: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
             cursor: pointer;
             transition: all .2s;
         }
@@ -385,7 +394,8 @@
             padding: 14px;
             background: linear-gradient(135deg, var(--accent2), #0ea5e9);
             border: none; border-radius: var(--r);
-            color: #000; font-size: 14px; font-weight: 800;
+            color: #000; font-size: 11px; font-weight: 800;
+            letter-spacing: .1em; text-transform: uppercase;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 8px;
             transition: all .2s;
@@ -400,7 +410,8 @@
             border: 1px solid var(--border);
             border-radius: var(--r-sm);
             color: var(--text);
-            font-size: 13px; font-weight: 500;
+            font-size: 10px; font-weight: 700;
+            letter-spacing: .1em; text-transform: uppercase;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 7px;
             transition: all .2s;
@@ -414,7 +425,9 @@
             border: 1px solid var(--border);
             border-radius: var(--r-sm);
             color: var(--text-dim);
-            font-size: 12px; cursor: pointer;
+            font-size: 10px; font-weight: 700;
+            letter-spacing: .1em; text-transform: uppercase;
+            cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 6px;
             transition: all .2s;
         }
@@ -457,9 +470,15 @@
         #file-input { display: none; }
 
         .app-footer {
-            text-align: center;
-            padding: 6px;
-            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            height: 32px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
             color: var(--text-dim);
             border-top: 1px solid var(--border);
             flex-shrink: 0;
@@ -469,3 +488,71 @@
             text-decoration: none;
         }
         .app-footer a:hover { color: var(--text); }
+        .footer-gh {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ── PNG MODAL ──────────────────────────────────────────────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.65);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px;
+            width: 400px;
+            max-width: 94vw;
+        }
+        .modal-title {
+            font-size: 15px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .08em;
+            margin-bottom: 4px;
+        }
+        .modal-sub {
+            font-size: 11px; color: var(--text-dim); margin-bottom: 22px;
+        }
+        .color-map-row {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 10px;
+        }
+        .color-map-swatch {
+            width: 34px; height: 34px; border-radius: 6px; flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+        .color-map-arrow { color: var(--text-dim); flex-shrink: 0; font-size: 16px; }
+        .color-map-target {
+            width: 34px; height: 34px; flex-shrink: 0;
+            border-radius: 6px; border: 1px solid var(--border);
+            padding: 2px; cursor: pointer; background: none;
+            transition: opacity .15s;
+        }
+        .color-map-erase-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; flex-shrink: 0;
+            background: none; border: 1px solid var(--border);
+            border-radius: 6px; cursor: pointer; color: var(--text-dim);
+            transition: all .15s;
+        }
+        .color-map-erase-btn:hover { border-color: var(--danger); color: var(--danger); }
+        .color-map-erase-btn.active { background: var(--danger); border-color: var(--danger); color: #fff; }
+        .color-map-count {
+            font-size: 11px; color: var(--text-dim); margin-left: auto; white-space: nowrap;
+        }
+        .modal-actions {
+            display: flex; gap: 8px; justify-content: flex-end; margin-top: 22px;
+        }
+        .modal-apply {
+            background: var(--accent); border-color: var(--accent); color: #fff;
+        }
+        .modal-apply:hover { background: #4f52d6; border-color: #4f52d6; color: #fff; }

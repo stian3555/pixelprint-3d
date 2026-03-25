@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PixelPrint 3D</title>
+    <meta name="description" content="Browser-based pixel art tool that exports ready-to-print .3mf files for Bambu Lab printers with AMS multi-color support.">
+    <meta property="og:title" content="PixelPrint 3D">
+    <meta property="og:description" content="Draw pixel art, preview it in 3D, then download a .3mf file for your Bambu Lab AMS printer.">
+    <meta property="og:url" content="https://pixelprint-3d.stian.cloud">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="PixelPrint 3D">
+    <meta name="twitter:description" content="Draw pixel art, preview it in 3D, then download a .3mf file for your Bambu Lab AMS printer.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,7 +78,7 @@
             <button class="tool-btn" id="tool-redo"   title="Redo (Ctrl+Y)"><i data-lucide="rotate-cw"></i></button>
         </div>
 
-        <div class="canvas-wrap">
+        <div class="canvas-wrap" id="canvas-wrap">
             <div id="board"></div>
 
             <div class="palette-bar">
@@ -155,14 +163,32 @@
 
             <button class="btn-export"   id="export-btn">⬇️ Last ned .3MF</button>
             <button class="btn-save-art" id="save-art-btn">💾 Lagre pikselkunst</button>
+            <button class="btn-save-art" id="export-png-btn">🖼 Eksporter PNG</button>
             <button class="btn-back"     id="back-btn">← Tilbake til tegning</button>
         </div>
     </div>
 
-    <input type="file" id="file-input" accept=".json,.pixelart">
+    <input type="file" id="file-input" accept=".json,.pixelart,.pixil,image/*">
+
+    <!-- ── PNG COLOR MAPPING MODAL ────────────────────────────── -->
+    <div class="modal-overlay" id="png-modal">
+        <div class="modal">
+            <div class="modal-title" id="modal-title-text">Import PNG</div>
+            <div class="modal-sub" id="modal-sub-text">Map each detected color to a palette slot, or mark it as erase.</div>
+            <div id="color-map-rows"></div>
+            <div class="modal-actions">
+                <button class="hbtn" id="png-cancel">Cancel</button>
+                <button class="hbtn modal-apply" id="png-apply">Apply</button>
+            </div>
+        </div>
+    </div>
 
     <footer class="app-footer">
-        <span id="footer-made-by">Made by</span> <a href="https://stianjohansen.no" target="_blank" rel="noopener">Stian Johansen</a>
+        <span><span id="footer-made-by">Made by</span> <a href="https://stianjohansen.no" target="_blank" rel="noopener">Stian Johansen</a></span>
+        <a href="https://github.com/stian3555/pixelprint-3d" target="_blank" rel="noopener" class="footer-gh">
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            stian3555 / pixelprint-3d
+        </a>
     </footer>
 
     <script type="module" src="app.js"></script>
