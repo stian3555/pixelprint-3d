@@ -160,8 +160,8 @@
 
         #board {
             display: grid;
-            grid-template-columns: repeat(32, 18px);
-            grid-template-rows:    repeat(32, 18px);
+            grid-template-columns: repeat(32, var(--cell, 18px));
+            grid-template-rows:    repeat(32, var(--cell, 18px));
             border: 2px solid var(--border);
             border-radius: 6px;
             cursor: crosshair;
@@ -170,7 +170,7 @@
         }
 
         .cell {
-            width: 18px; height: 18px;
+            width: var(--cell, 18px); height: var(--cell, 18px);
             background: #12121a;
             border-right:  1px solid rgba(255,255,255,.025);
             border-bottom: 1px solid rgba(255,255,255,.025);
@@ -493,3 +493,66 @@
             align-items: center;
             gap: 6px;
         }
+
+        /* ── PNG MODAL ──────────────────────────────────────────────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.65);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px;
+            width: 400px;
+            max-width: 94vw;
+        }
+        .modal-title {
+            font-size: 15px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .08em;
+            margin-bottom: 4px;
+        }
+        .modal-sub {
+            font-size: 11px; color: var(--text-dim); margin-bottom: 22px;
+        }
+        .color-map-row {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 10px;
+        }
+        .color-map-swatch {
+            width: 34px; height: 34px; border-radius: 6px; flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+        .color-map-arrow { color: var(--text-dim); flex-shrink: 0; font-size: 16px; }
+        .color-map-target {
+            width: 34px; height: 34px; flex-shrink: 0;
+            border-radius: 6px; border: 1px solid var(--border);
+            padding: 2px; cursor: pointer; background: none;
+            transition: opacity .15s;
+        }
+        .color-map-erase-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; flex-shrink: 0;
+            background: none; border: 1px solid var(--border);
+            border-radius: 6px; cursor: pointer; color: var(--text-dim);
+            transition: all .15s;
+        }
+        .color-map-erase-btn:hover { border-color: var(--danger); color: var(--danger); }
+        .color-map-erase-btn.active { background: var(--danger); border-color: var(--danger); color: #fff; }
+        .color-map-count {
+            font-size: 11px; color: var(--text-dim); margin-left: auto; white-space: nowrap;
+        }
+        .modal-actions {
+            display: flex; gap: 8px; justify-content: flex-end; margin-top: 22px;
+        }
+        .modal-apply {
+            background: var(--accent); border-color: var(--accent); color: #fff;
+        }
+        .modal-apply:hover { background: #4f52d6; border-color: #4f52d6; color: #fff; }

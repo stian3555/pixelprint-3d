@@ -1,13 +1,13 @@
 # PixelPrint 3D
 
-[![Live Demo](https://img.shields.io/badge/live%20demo-pixelprint--3d.stian.cloud-6366f1?style=flat-square)](https://pixelprint-3d.stian.cloud)
+[![Try](https://img.shields.io/badge/Try-pixelprint--3d.stian.cloud-6366f1?style=flat-square)](https://pixelprint-3d.stian.cloud)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22d3ee?style=flat-square)](LICENSE)
 
 A browser-based pixel art tool that exports ready-to-print `.3mf` files for **Bambu Lab** printers with AMS multi-color support.
 
 Draw pixel art, preview it in 3D, then download a `.3mf` file you can open directly in Bambu Studio — no plugins, no installation required.
 
-<!-- Add a screenshot or GIF here: ![screenshot](screenshot.png) -->
+![screenshot](screenshot.png)
 
 ---
 
@@ -48,6 +48,14 @@ npx serve .
 - [JSZip](https://stuk.github.io/jszip/) — .3mf generation
 - [FileSaver.js](https://github.com/eligrey/FileSaver.js) — file download
 - [Inter](https://rsms.me/inter/) — font
+
+## Background
+
+I was watching my son do bead art one afternoon and realized — that's just pixel art in physical form. Each bead placed on a grid, one color at a time.
+
+We have a 3D printer, so I started wondering: what if he could draw his pixel art on a screen and actually hold the result in his hands a few minutes later? Something like what he makes with beads, but designed by him from scratch.
+
+That's what this is. A tool built for anyone who likes making things.
 
 ## License
 

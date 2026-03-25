@@ -43,6 +43,19 @@ import { PROJECT_CFG_B64 } from './config.js';
         const step2Pill     = document.getElementById('step2-pill');
         const screen1       = document.getElementById('screen-design');
         const screen2       = document.getElementById('screen-preview');
+        const canvasWrap    = document.getElementById('canvas-wrap');
+        const paletteBar    = document.querySelector('.palette-bar');
+
+        // ── RESPONSIVE CELL SIZE ─────────────────────────────────────────
+        function updateCellSize() {
+            const pad = 48; // 24px each side
+            const gap = 18; // gap between board and palette bar
+            const availW = canvasWrap.clientWidth  - pad;
+            const availH = canvasWrap.clientHeight - pad - paletteBar.offsetHeight - gap;
+            const cell = Math.max(8, Math.floor(Math.min(availW, availH) / GRID));
+            document.documentElement.style.setProperty('--cell', cell + 'px');
+        }
+        new ResizeObserver(updateCellSize).observe(canvasWrap);
 
         // ── KEYBOARD SHORTCUTS ───────────────────────────────────────────
         document.addEventListener('keydown', e => {
@@ -514,44 +527,94 @@ import { PROJECT_CFG_B64 } from './config.js';
         saveDraftBtn.addEventListener('click', saveArt);
         saveArtBtn  .addEventListener('click', saveArt);
 
-        function saveArt() {
-            const data = { version: 1, palette, board };
-            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            const name = (document.getElementById('project-name').value.trim() || 'pixelart')
+        function fileName() {
+            return (document.getElementById('project-name').value.trim() || 'pixelart')
                 .replace(/[^a-zA-Z0-9_\-æøåÆØÅ ]/g, '').trim().replace(/ +/g, '_') || 'pixelart';
-            saveAs(blob, name + '.json');
+        }
+
+        const PIXIL_COLORS = {"default":["000000","ffffff","f44336","e91e63","9c27b0","673ab7","3f51b5","2196f3","03a9f4","00bcd4","009688","4caf50","8bc34a","cddc39","ffeb3b","ffc107","ff9800","ff5722","795548","9e9e9e","607d8b"],"simple":["ffffff","d4d4d4","a1a1a1","787878","545454","303030","000000","edc5c5","e68383","ff0000","de2424","ad3636","823737","592b2b","f5d2ee","eb8dd7","f700b9","bf1f97","9c277f","732761","4f2445","e2bcf7","bf79e8","9d00ff","8330ba","6d3096","502c69","351b47","c5c3f0","736feb","0905f7","2e2eb0","2d2d80","252554","090936","c7e2ed","6ac3e6","00bbff","279ac4","347c96","2d5b6b","103947","bbf0d9","6febb3","00ff88","2eb878","349166","2b694c","0c3d25","c2edc0","76ed70","0dff00","36c72c","408c3b","315c2e","144511","d6edbb","b5eb73","8cff00","89c93a","6f8f44","4b632a","2a400c","f1f2bf","eef069","ffff00","baba30","91913f","5e5e2b","3b3b09","ffdeb8","f2ae61","ff8400","c48037","85623d","573e25","3d2309","fcbbae","ff8066","ff2b00","cc553d","9c5b4e","61372e","36130b"],"common":["000000","ffffff","464646","b4b4b4","990030","9c5a3c","ed1c24","ffa3b1","ff7e00","e5aa7a","ffc20e","f5e49c","fff200","fff9bd","a8e61d","d3f9bc","22b14c","00b7ef","99d9ea","4d6df3","709ad1","2f3699","546d8e","6f3198","b5a5d5"],"skin tones":["ffe0bd","ffdbac","ffcd94","eac086","e0ac69","f1c27d","ffad60","c68642","8d5524","896347","765339","613d24","4c2d17","391e0b","351606","2d1304","180a01","090300"]};
+
+        function saveArt() {
+            const offscreen = document.createElement('canvas');
+            offscreen.width = GRID; offscreen.height = GRID;
+            const ctx = offscreen.getContext('2d');
+            for (let y = 0; y < GRID; y++)
+                for (let x = 0; x < GRID; x++)
+                    if (board[y][x]) { ctx.fillStyle = board[y][x]; ctx.fillRect(x, y, 1, 1); }
+            offscreen.toBlob(pngBlob => {
+                const fr = new FileReader();
+                fr.onload = ev => {
+                    const base64 = ev.target.result.split(',')[1];
+                    const src = 'data:image/pngp98kjasdnasd983/24kasdjasdbase64,' + base64;
+                    const now = Date.now();
+                    const unqid = Math.random().toString(36).slice(2, 7);
+                    const pixil = {
+                        application: 'pixil', type: '.pixil', version: '2.7.0',
+                        website: 'pixelprint-3d.stian.cloud',
+                        author: 'https://pixelprint-3d.stian.cloud',
+                        contact: 'https://github.com/stian3555/pixelprint-3d',
+                        width: GRID, height: GRID,
+                        colors: PIXIL_COLORS,
+                        colorSelected: 'common',
+                        frames: [{ name: '', speed: 100, layers: [{
+                            id: 0, src, edit: false, name: 'Background', opacity: 1,
+                            active: true, unqid: 'unic5a',
+                            options: { blend: 'source-over', alpha_lock: false, locked: false,
+                                filter: { brightness:'100%', contrast:'100%', grayscale:'0%',
+                                    blur: 0, 'hue-rotate': 0, dropshadow_x: 0, dropshadow_y: 0,
+                                    dropshadow_blur: 0, dropshadow_alpha: 1, dropshadow_color: '#000000' }
+                            }
+                        }], active: true, selectedLayer: 0, unqid, preview: src, previewApp: '', width: GRID, height: GRID }],
+                        currentFrame: 0, speed: 100,
+                        name: document.getElementById('project-name').value.trim() || 'pixelart',
+                        preview: src, previewApp: '',
+                        art_edit_id: 0, palette_id: false,
+                        created_at: now, updated_at: now, id: now,
+                    };
+                    saveAs(new Blob([JSON.stringify(pixil)], {type: 'application/json'}), fileName() + '.pixil');
+                };
+                fr.readAsDataURL(pngBlob);
+            });
         }
 
         loadBtn.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', e => {
             const file = e.target.files[0];
             if (!file) return;
-            const reader = new FileReader();
-            reader.onload = ev => {
-                try {
-                    const data = JSON.parse(ev.target.result);
-                    if (!data.board || !data.palette) throw new Error(t('invalidFile'));
-                    palette = data.palette;
-                    board   = data.board;
-                    undoStack = []; redoStack = [];
-                    // Repaint all cells
-                    for (let y = 0; y < GRID; y++)
-                        for (let x = 0; x < GRID; x++) {
-                            const col = board[y][x];
-                            getCellEl(x, y).style.background = col ?? '#12121a';
-                            if (threejsReady) {
-                                cubes3d[y][x].visible = col !== null;
-                                if (col) cubes3d[y][x].material.color.set(col);
-                            }
-                        }
-                    buildSwatches();
-                    updateStats();
-                } catch(err) {
-                    alert(t('loadError') + err.message);
-                }
-            };
-            reader.readAsText(file);
             fileInput.value = '';
+            if (file.name.endsWith('.pixil')) {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        if (data.application !== 'pixil' || !data.frames?.[0]?.layers?.length)
+                            throw new Error(t('invalidFile'));
+                        importPixil(data);
+                    } catch(err) { alert(t('loadError') + err.message); }
+                };
+                reader.readAsText(file);
+            } else if (file.type.startsWith('image/')) {
+                importPng(file);
+            } else {
+                // Legacy .json format
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        if (!data.board || !data.palette) throw new Error(t('invalidFile'));
+                        palette = data.palette; board = data.board;
+                        undoStack = []; redoStack = [];
+                        for (let y = 0; y < GRID; y++)
+                            for (let x = 0; x < GRID; x++) {
+                                const col = board[y][x];
+                                getCellEl(x, y).style.background = col ?? '#12121a';
+                                if (threejsReady) { cubes3d[y][x].visible = col !== null; if (col) cubes3d[y][x].material.color.set(col); }
+                            }
+                        buildSwatches(); updateStats();
+                    } catch(err) { alert(t('loadError') + err.message); }
+                };
+                reader.readAsText(file);
+            }
         });
 
         // ── EXPORT 3MF ───────────────────────────────────────────────────
@@ -841,6 +904,206 @@ import { PROJECT_CFG_B64 } from './config.js';
         document.addEventListener('click', () =>
             document.getElementById('lang-menu').classList.remove('open'));
 
+        // ── PNG EXPORT ───────────────────────────────────────────────────
+        document.getElementById('export-png-btn').addEventListener('click', () => {
+            const scale = 16;
+            const canvas = document.createElement('canvas');
+            canvas.width = GRID * scale; canvas.height = GRID * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#12121a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let y = 0; y < GRID; y++)
+                for (let x = 0; x < GRID; x++)
+                    if (board[y][x]) {
+                        ctx.fillStyle = board[y][x];
+                        ctx.fillRect(x * scale, y * scale, scale, scale);
+                    }
+            canvas.toBlob(blob => {
+                const name = (document.getElementById('project-name').value.trim() || 'pixelart')
+                    .replace(/[^a-zA-Z0-9_\-æøåÆØÅ ]/g, '').trim().replace(/ +/g, '_') || 'pixelart';
+                saveAs(blob, name + '.png');
+            });
+        });
+
+        // ── PNG IMPORT ───────────────────────────────────────────────────
+        let pngClusters = []; // [{color:[r,g,b], pixels:[{x,y}], count, targetHex, erase}]
+
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+        }
+
+        function kMeans(rawPixels, k) {
+            const pts = rawPixels.map(p => [p.r, p.g, p.b]);
+            // k-means++ init
+            const freq = {};
+            pts.forEach(p => { const k = p.join(); freq[k] = (freq[k]||0) + 1; });
+            const byFreq = Object.entries(freq).sort((a,b) => b[1]-a[1]);
+            const centroids = [byFreq[0][0].split(',').map(Number)];
+            for (let c = 1; c < k; c++) {
+                const dists = pts.map(p => Math.min(...centroids.map(
+                    ctr => (p[0]-ctr[0])**2 + (p[1]-ctr[1])**2 + (p[2]-ctr[2])**2)));
+                const sum = dists.reduce((s, d) => s + d, 0);
+                let r = Math.random() * sum;
+                let chosen = 0;
+                for (let i = 0; i < dists.length; i++) { r -= dists[i]; if (r <= 0) { chosen = i; break; } }
+                centroids.push([...pts[chosen]]);
+            }
+            // Iterate
+            for (let iter = 0; iter < 30; iter++) {
+                const clusters = Array.from({length: k}, () => []);
+                pts.forEach(p => {
+                    let bi = 0, bd = Infinity;
+                    centroids.forEach((c, i) => { const d = (p[0]-c[0])**2+(p[1]-c[1])**2+(p[2]-c[2])**2; if (d < bd) { bd = d; bi = i; } });
+                    clusters[bi].push(p);
+                });
+                let changed = false;
+                centroids.forEach((c, i) => {
+                    if (!clusters[i].length) return;
+                    const nr = Math.round(clusters[i].reduce((s,p)=>s+p[0],0)/clusters[i].length);
+                    const ng = Math.round(clusters[i].reduce((s,p)=>s+p[1],0)/clusters[i].length);
+                    const nb = Math.round(clusters[i].reduce((s,p)=>s+p[2],0)/clusters[i].length);
+                    if (c[0]!==nr||c[1]!==ng||c[2]!==nb) { changed = true; centroids[i] = [nr,ng,nb]; }
+                });
+                if (!changed) break;
+            }
+            return centroids;
+        }
+
+        function processImageSource(source) {
+            const canvas = document.createElement('canvas');
+            canvas.width = GRID; canvas.height = GRID;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(source, 0, 0, GRID, GRID);
+            const data = ctx.getImageData(0, 0, GRID, GRID).data;
+            const opaquePixels = [];
+            for (let y = 0; y < GRID; y++)
+                for (let x = 0; x < GRID; x++) {
+                    const i = (y * GRID + x) * 4;
+                    if (data[i+3] >= 128)
+                        opaquePixels.push({x, y, r: data[i], g: data[i+1], b: data[i+2]});
+                }
+            if (!opaquePixels.length) { alert('No opaque pixels found.'); return; }
+            const k = Math.min(4, new Set(opaquePixels.map(p => `${p.r},${p.g},${p.b}`)).size);
+            const centroids = kMeans(opaquePixels, k);
+            pngClusters = centroids.map(c => ({color: c, pixels: [], count: 0, targetHex: rgbToHex(...c), erase: false}));
+            opaquePixels.forEach(px => {
+                let bi = 0, bd = Infinity;
+                centroids.forEach((c, i) => { const d = (px.r-c[0])**2+(px.g-c[1])**2+(px.b-c[2])**2; if (d < bd) { bd = d; bi = i; } });
+                pngClusters[bi].pixels.push({x: px.x, y: px.y});
+                pngClusters[bi].count++;
+            });
+            pngClusters.sort((a, b) => b.count - a.count);
+            showPngModal();
+        }
+
+        function importPng(file) {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => { URL.revokeObjectURL(url); processImageSource(img); };
+            img.src = url;
+        }
+
+        function importPixil(data) {
+            const layers = data.frames[0].layers;
+            const offscreen = document.createElement('canvas');
+            offscreen.width = GRID; offscreen.height = GRID;
+            const octx = offscreen.getContext('2d');
+            let loaded = 0;
+            const imgs = layers.map(() => new Image());
+            imgs.forEach((img, i) => {
+                img.onload = () => {
+                    if (++loaded < layers.length) return;
+                    imgs.forEach((im, j) => {
+                        octx.globalAlpha = layers[j].opacity ?? 1;
+                        octx.globalCompositeOperation = layers[j].options?.blend ?? 'source-over';
+                        octx.drawImage(im, 0, 0, GRID, GRID);
+                    });
+                    octx.globalAlpha = 1;
+                    octx.globalCompositeOperation = 'source-over';
+                    processImageSource(offscreen);
+                };
+                const src = layers[i].src;
+                img.src = 'data:image/png;base64,' + src.substring(src.indexOf(',') + 1);
+            });
+        }
+
+        function showPngModal() {
+            const rowsEl = document.getElementById('color-map-rows');
+            rowsEl.innerHTML = '';
+            pngClusters.forEach((cluster, i) => {
+                const row = document.createElement('div');
+                row.className = 'color-map-row';
+                row.innerHTML = `
+                    <div class="color-map-swatch" style="background:${cluster.targetHex}"></div>
+                    <span class="color-map-arrow">→</span>
+                    <input type="color" class="color-map-target" value="${cluster.targetHex}" data-idx="${i}">
+                    <button class="color-map-erase-btn" data-idx="${i}" title="Erase"><i data-lucide="eraser"></i></button>
+                    <span class="color-map-count">${cluster.count}px</span>
+                `;
+                const colorInput = row.querySelector('.color-map-target');
+                const eraseBtn   = row.querySelector('.color-map-erase-btn');
+                colorInput.addEventListener('input', e => {
+                    pngClusters[i].targetHex = e.target.value;
+                    pngClusters[i].erase = false;
+                    eraseBtn.classList.remove('active');
+                    colorInput.style.opacity = '1';
+                });
+                eraseBtn.addEventListener('click', () => {
+                    pngClusters[i].erase = !pngClusters[i].erase;
+                    eraseBtn.classList.toggle('active');
+                    colorInput.style.opacity = pngClusters[i].erase ? '0.3' : '1';
+                });
+                rowsEl.appendChild(row);
+            });
+            lucide.createIcons({nodes: [rowsEl], attrs: {'stroke-width': 1.75}});
+            document.getElementById('png-modal').classList.add('open');
+        }
+
+        document.getElementById('png-apply').addEventListener('click', () => {
+            // Snapshot for undo
+            const changes = [];
+            for (let y = 0; y < GRID; y++)
+                for (let x = 0; x < GRID; x++)
+                    changes.push({x, y, from: board[y][x], to: null});
+
+            // Apply clusters to board
+            pngClusters.forEach(cluster => {
+                if (cluster.erase) return;
+                cluster.pixels.forEach(({x, y}) => {
+                    const entry = changes.find(c => c.x === x && c.y === y);
+                    if (entry) entry.to = cluster.targetHex;
+                });
+            });
+
+            // Commit to board and repaint
+            changes.forEach(({x, y, to}) => {
+                board[y][x] = to;
+                getCellEl(x, y).style.background = to ?? '#12121a';
+                if (threejsReady) {
+                    cubes3d[y][x].visible = to !== null;
+                    if (to) cubes3d[y][x].material.color.set(to);
+                }
+            });
+
+            // Update palette with non-erased colors
+            const newColors = pngClusters.filter(c => !c.erase).map(c => c.targetHex);
+            for (let i = 0; i < palette.length; i++)
+                if (newColors[i]) palette[i] = newColors[i];
+
+            const realChanges = changes.filter(c => c.from !== c.to);
+            if (realChanges.length) { undoStack.push(realChanges); redoStack = []; }
+
+            buildSwatches();
+            updateStats();
+            autosave();
+            document.getElementById('png-modal').classList.remove('open');
+        });
+
+        document.getElementById('png-cancel').addEventListener('click', () => {
+            document.getElementById('png-modal').classList.remove('open');
+        });
+
         // ── BOOT ─────────────────────────────────────────────────────────
         try {
             const saved = JSON.parse(localStorage.getItem('pixelprint-state'));
@@ -863,6 +1126,7 @@ import { PROJECT_CFG_B64 } from './config.js';
         } catch(e) {}
         lucide.createIcons({attrs:{"stroke-width":1.75}});
         buildBoard();
+        updateCellSize();
         // Repaint restored board
         for (let y = 0; y < GRID; y++)
             for (let x = 0; x < GRID; x++)

@@ -78,7 +78,7 @@
             <button class="tool-btn" id="tool-redo"   title="Redo (Ctrl+Y)"><i data-lucide="rotate-cw"></i></button>
         </div>
 
-        <div class="canvas-wrap">
+        <div class="canvas-wrap" id="canvas-wrap">
             <div id="board"></div>
 
             <div class="palette-bar">
@@ -163,11 +163,25 @@
 
             <button class="btn-export"   id="export-btn">⬇️ Last ned .3MF</button>
             <button class="btn-save-art" id="save-art-btn">💾 Lagre pikselkunst</button>
+            <button class="btn-save-art" id="export-png-btn">🖼 Eksporter PNG</button>
             <button class="btn-back"     id="back-btn">← Tilbake til tegning</button>
         </div>
     </div>
 
-    <input type="file" id="file-input" accept=".json,.pixelart">
+    <input type="file" id="file-input" accept=".json,.pixelart,.pixil,image/*">
+
+    <!-- ── PNG COLOR MAPPING MODAL ────────────────────────────── -->
+    <div class="modal-overlay" id="png-modal">
+        <div class="modal">
+            <div class="modal-title" id="modal-title-text">Import PNG</div>
+            <div class="modal-sub" id="modal-sub-text">Map each detected color to a palette slot, or mark it as erase.</div>
+            <div id="color-map-rows"></div>
+            <div class="modal-actions">
+                <button class="hbtn" id="png-cancel">Cancel</button>
+                <button class="hbtn modal-apply" id="png-apply">Apply</button>
+            </div>
+        </div>
+    </div>
 
     <footer class="app-footer">
         <span><span id="footer-made-by">Made by</span> <a href="https://stianjohansen.no" target="_blank" rel="noopener">Stian Johansen</a></span>
