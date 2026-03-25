@@ -19,7 +19,7 @@ Draw pixel art, preview it in 3D, then download a `.3mf` file you can open direc
 
 ## Usage
 
-Open [pixelprint-3d.pages.dev](https://pixelprint-3d.pages.dev) in your browser — no installation needed.
+Open [pixelprint-3d.stian.cloud](https://pixelprint-3d.stian.cloud) in your browser — no installation needed.
 
 1. **Draw** your pixel art on the canvas
 2. Pick up to 4 colors matching your loaded AMS filaments
@@ -28,7 +28,7 @@ Open [pixelprint-3d.pages.dev](https://pixelprint-3d.pages.dev) in your browser 
 
 ## Running locally
 
-No build step required — just open `index.html` in a browser, or serve the folder with any static file server:
+No build step required — serve the folder with any static file server:
 
 ```bash
 npx serve .
