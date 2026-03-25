@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PixelPrint 3D</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,8 +65,6 @@
             <button class="tool-btn" id="tool-fill"   title="Fill (F)"><i data-lucide="paint-bucket"></i></button>
             <button class="tool-btn" id="tool-rect"   title="Rectangle (R)"><i data-lucide="square"></i></button>
             <button class="tool-btn" id="tool-line"   title="Line (L)"><i data-lucide="minus"></i></button>
-            <div class="tool-divider"></div>
-            <button class="tool-btn" id="tool-eraser" title="Eraser (E)"><i data-lucide="eraser"></i></button>
             <div class="tool-divider"></div>
             <button class="tool-btn" id="tool-undo"   title="Undo (Ctrl+Z)"><i data-lucide="rotate-ccw"></i></button>
             <button class="tool-btn" id="tool-redo"   title="Redo (Ctrl+Y)"><i data-lucide="rotate-cw"></i></button>
@@ -148,6 +147,12 @@
 
             <div class="spacer"></div>
 
+            <div class="side-section" style="margin-top:0;margin-bottom:12px;">
+                <div class="side-title" id="title-project-name">Prosjektnavn</div>
+                <input type="text" id="project-name" placeholder="pixelart" maxlength="64"
+                    style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 8px;font-size:13px;outline:none;">
+            </div>
+
             <button class="btn-export"   id="export-btn">⬇️ Last ned .3MF</button>
             <button class="btn-save-art" id="save-art-btn">💾 Lagre pikselkunst</button>
             <button class="btn-back"     id="back-btn">← Tilbake til tegning</button>
@@ -157,7 +162,7 @@
     <input type="file" id="file-input" accept=".json,.pixelart">
 
     <footer class="app-footer">
-        Made by <a href="https://stianjohansen.no" target="_blank" rel="noopener">Stian Johansen</a>
+        <span id="footer-made-by">Made by</span> <a href="https://stianjohansen.no" target="_blank" rel="noopener">Stian Johansen</a>
     </footer>
 
     <script type="module" src="app.js"></script>

@@ -10,8 +10,8 @@ import { PROJECT_CFG_B64 } from './config.js';
         // ── STATE ────────────────────────────────────────────────────────
         let board        = Array.from({length: GRID}, () => Array(GRID).fill(null));
         let palette      = ['#E63946', '#457B9D', '#2A9D8F', '#E9C46A'];
-        let activeColor  = 0;   // palette index, or -1 = eraser
-        let activeTool   = 'pencil'; // pencil | fill | eraser | rect | line
+        let activeColor  = 0;   // palette index, or -1 = erase
+        let activeTool   = 'pencil'; // pencil | fill | rect | line
         let isDrawing    = false;
         let threejsReady = false;
         // Undo / redo
@@ -53,10 +53,9 @@ import { PROJECT_CFG_B64 } from './config.js';
             }
             if (e.key === 'b' || e.key === 'B') setTool('pencil');
             if (e.key === 'f' || e.key === 'F') setTool('fill');
-            if (e.key === 'e' || e.key === 'E') setTool('eraser');
             if (e.key === 'r' || e.key === 'R') setTool('rect');
             if (e.key === 'l' || e.key === 'L') setTool('line');
-            if (e.key === '0') setTool('eraser');
+            if (e.key === '0') setActiveColor(-1);
             if (e.key >= '1' && e.key <= '4')  setActiveColor(+e.key - 1);
         });
 
@@ -73,7 +72,6 @@ import { PROJECT_CFG_B64 } from './config.js';
 
         document.getElementById('tool-pencil').addEventListener('click', () => setTool('pencil'));
         document.getElementById('tool-fill')  .addEventListener('click', () => setTool('fill'));
-        document.getElementById('tool-eraser').addEventListener('click', () => setTool('eraser'));
         document.getElementById('tool-rect')  .addEventListener('click', () => setTool('rect'));
         document.getElementById('tool-line')  .addEventListener('click', () => setTool('line'));
         document.getElementById('tool-undo')  .addEventListener('click', undo);
@@ -91,19 +89,15 @@ import { PROJECT_CFG_B64 } from './config.js';
                 badge.className = 'swatch-num';
                 badge.textContent = i + 1;
                 s.appendChild(badge);
-                s.addEventListener('click', () => {
-                    setActiveColor(i);
-                    if (activeTool === 'eraser') setTool('pencil');
-                });
+                s.addEventListener('click', () => setActiveColor(i));
                 swatchesEl.appendChild(s);
             });
             // Eraser swatch
             const e = document.createElement('div');
-            e.className = 'swatch swatch-eraser' + (activeTool === 'eraser' ? ' active' : '');
-            e.innerHTML = '<i data-lucide="eraser"></i><span class="swatch-num">0</span>';
-            lucide.createIcons({nodes:[e]});
+            e.className = 'swatch swatch-eraser' + (activeColor === -1 ? ' active' : '');
+            e.innerHTML = '<span class="swatch-num">0</span>';
             e.title = t('eraserTitle');
-            e.addEventListener('click', () => setTool('eraser'));
+            e.addEventListener('click', () => setActiveColor(-1));
             swatchesEl.appendChild(e);
 
             colorPicker.value = palette[Math.max(0, activeColor)];
@@ -183,7 +177,7 @@ import { PROJECT_CFG_B64 } from './config.js';
         // ── PAINT ────────────────────────────────────────────────────────
         function paint(x, y) {
             if (activeTool === 'fill') { floodFill(x, y); return; }
-            const isErase = activeTool === 'eraser';
+            const isErase = activeColor === -1;
             const col     = isErase ? null : palette[activeColor];
             setCell(x, y, col);
         }
@@ -236,7 +230,7 @@ import { PROJECT_CFG_B64 } from './config.js';
 
         function showRectPreview(x1, y1, x2, y2) {
             clearPreview();
-            const col = palette[activeColor];
+            const col = activeColor === -1 ? '#12121a' : palette[activeColor];
             const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
             const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
             for (let y = minY; y <= maxY; y++)
@@ -248,7 +242,7 @@ import { PROJECT_CFG_B64 } from './config.js';
 
         function showLinePreview(x1, y1, x2, y2) {
             clearPreview();
-            const col = palette[activeColor];
+            const col = activeColor === -1 ? '#12121a' : palette[activeColor];
             bresenham(x1, y1, x2, y2).forEach(({x, y}) => {
                 getCellEl(x, y).style.background = col;
                 previewCells.push({x, y});
@@ -271,7 +265,7 @@ import { PROJECT_CFG_B64 } from './config.js';
         }
 
         function commitShape() {
-            const col = activeTool === 'eraser' ? null : palette[activeColor];
+            const col = activeColor === -1 ? null : palette[activeColor];
             const cells = [...previewCells];
             previewCells = []; shapeStart = null;
             cells.forEach(({x, y}) => setCell(x, y, col));
@@ -280,9 +274,8 @@ import { PROJECT_CFG_B64 } from './config.js';
 
         // ── FLOOD FILL ───────────────────────────────────────────────────
         function floodFill(sx, sy) {
-            if (activeTool === 'eraser') return;
+            const fill   = activeColor === -1 ? null : palette[activeColor];
             const target = board[sy][sx];
-            const fill   = palette[activeColor];
             if (target === fill) return;
             const stack = [[sx, sy]];
             const visited = new Set();
@@ -305,6 +298,7 @@ import { PROJECT_CFG_B64 } from './config.js';
                     board, palette,
                     pixelSizeX,
                     thickness: parseFloat(document.getElementById('thickness').value),
+                    projectName: document.getElementById('project-name').value,
                 }));
             } catch(e) {}
         }
@@ -412,6 +406,8 @@ import { PROJECT_CFG_B64 } from './config.js';
             updateModelSizeLbl();
             if (threejsReady) rebuildScene();
         });
+
+        document.getElementById('project-name').addEventListener('input', autosave);
 
         // ── THREE.JS ─────────────────────────────────────────────────────
         let scene, camera, renderer, controls, cubes3d, bedLine;
@@ -521,7 +517,9 @@ import { PROJECT_CFG_B64 } from './config.js';
         function saveArt() {
             const data = { version: 1, palette, board };
             const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            saveAs(blob, 'pixelart.json');
+            const name = (document.getElementById('project-name').value.trim() || 'pixelart')
+                .replace(/[^a-zA-Z0-9_\-æøåÆØÅ ]/g, '').trim().replace(/ +/g, '_') || 'pixelart';
+            saveAs(blob, name + '.json');
         }
 
         loadBtn.addEventListener('click', () => fileInput.click());
@@ -765,7 +763,9 @@ import { PROJECT_CFG_B64 } from './config.js';
             }
 
             zip.generateAsync({type: 'blob'}).then(blob => {
-                saveAs(blob, 'pixelart.3mf');
+                const name = (document.getElementById('project-name').value.trim() || 'pixelart')
+                    .replace(/[^a-zA-Z0-9_\-æøåÆØÅ ]/g, '').trim().replace(/ +/g, '_') || 'pixelart';
+                saveAs(blob, name + '.3mf');
                 resetExportBtn();
             });
         }
@@ -787,7 +787,6 @@ import { PROJECT_CFG_B64 } from './config.js';
             document.getElementById('save-draft-btn').textContent      = t('save');
             document.getElementById('tool-pencil').title               = t('toolPencil');
             document.getElementById('tool-fill').title                 = t('toolFill');
-            document.getElementById('tool-eraser').title               = t('toolEraser');
             document.getElementById('palette-label').textContent       = t('paletteLabel');
             document.getElementById('color-picker').title              = t('colorPickerTip');
             document.getElementById('title-pixels').textContent        = t('titlePixels');
@@ -810,6 +809,9 @@ import { PROJECT_CFG_B64 } from './config.js';
             document.getElementById('tool-undo').title                 = t('undo');
             document.getElementById('tool-redo').title                 = t('redo');
             document.getElementById('title-scale').textContent         = t('titleScale');
+            document.getElementById('title-project-name').textContent  = t('titleProjectName');
+            document.getElementById('project-name').placeholder        = t('projectNamePlaceholder');
+            document.getElementById('footer-made-by').textContent      = t('madeBy');
             document.getElementById('label-pxw').textContent           = t('labelPxW');
 
             updateModelSizeLbl();
@@ -853,6 +855,9 @@ import { PROJECT_CFG_B64 } from './config.js';
                 if (saved.thickness) {
                     document.getElementById('thickness').value = saved.thickness;
                     document.getElementById('thickness-val').textContent = saved.thickness.toFixed(1);
+                }
+                if (saved.projectName) {
+                    document.getElementById('project-name').value = saved.projectName;
                 }
             }
         } catch(e) {}
