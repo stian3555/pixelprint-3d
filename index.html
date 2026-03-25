@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelPrint 3D</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</head>
+<body>
+
+    <!-- ── HEADER ─────────────────────────────────────────────── -->
+    <header class="app-header">
+        <div class="logo">PixelPrint <span>3D</span></div>
+
+        <div class="steps">
+            <div class="step-pill active" id="step1-pill"><span class="step-num">1</span> Draw</div>
+            <div class="step-arrow">›</div>
+            <div class="step-pill inactive" id="step2-pill"><span class="step-num">2</span> Preview</div>
+        </div>
+
+        <div class="header-btns">
+            <button class="hbtn" id="load-btn">Open</button>
+            <button class="hbtn" id="save-draft-btn">Save</button>
+            <div class="lang-wrap" id="lang-wrap">
+                <button class="hbtn" id="lang-btn" style="padding:6px 10px"><img id="lang-flag" src="https://flagcdn.com/20x15/gb.png" width="20" height="15" alt="EN" style="display:block"></button>
+                <div class="lang-menu" id="lang-menu">
+                    <button class="lang-opt active" data-lang="en"><img src="https://flagcdn.com/20x15/gb.png" width="20" height="15" alt="EN"> English</button>
+                    <button class="lang-opt" data-lang="no"><img src="https://flagcdn.com/20x15/no.png" width="20" height="15" alt="NO"> Norsk</button>
+                    <button class="lang-opt" data-lang="de"><img src="https://flagcdn.com/20x15/de.png" width="20" height="15" alt="DE"> Deutsch</button>
+                    <button class="lang-opt" data-lang="fr"><img src="https://flagcdn.com/20x15/fr.png" width="20" height="15" alt="FR"> Français</button>
+                    <button class="lang-opt" data-lang="es"><img src="https://flagcdn.com/20x15/es.png" width="20" height="15" alt="ES"> Español</button>
+                    <button class="lang-opt" data-lang="pt"><img src="https://flagcdn.com/20x15/pt.png" width="20" height="15" alt="PT"> Português</button>
+                    <button class="lang-opt" data-lang="zh"><img src="https://flagcdn.com/20x15/cn.png" width="20" height="15" alt="ZH"> 中文</button>
+                    <button class="lang-opt" data-lang="ja"><img src="https://flagcdn.com/20x15/jp.png" width="20" height="15" alt="JA"> 日本語</button>
+                    <button class="lang-opt" data-lang="sv"><img src="https://flagcdn.com/20x15/se.png" width="20" height="15" alt="SV"> Svenska</button>
+                    <button class="lang-opt" data-lang="da"><img src="https://flagcdn.com/20x15/dk.png" width="20" height="15" alt="DA"> Dansk</button>
+                    <button class="lang-opt" data-lang="fi"><img src="https://flagcdn.com/20x15/fi.png" width="20" height="15" alt="FI"> Suomi</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── SCREEN 1: DESIGN ───────────────────────────────────── -->
+    <div class="screen active" id="screen-design">
+
+        <div class="toolbar">
+            <button class="tool-btn active" id="tool-pencil" title="Pencil (B)"><i data-lucide="pencil"></i></button>
+            <button class="tool-btn" id="tool-fill"   title="Fill (F)"><i data-lucide="paint-bucket"></i></button>
+            <button class="tool-btn" id="tool-rect"   title="Rectangle (R)"><i data-lucide="square"></i></button>
+            <button class="tool-btn" id="tool-line"   title="Line (L)"><i data-lucide="minus"></i></button>
+            <div class="tool-divider"></div>
+            <button class="tool-btn" id="tool-eraser" title="Eraser (E)"><i data-lucide="eraser"></i></button>
+            <div class="tool-divider"></div>
+            <button class="tool-btn" id="tool-undo"   title="Undo (Ctrl+Z)"><i data-lucide="rotate-ccw"></i></button>
+            <button class="tool-btn" id="tool-redo"   title="Redo (Ctrl+Y)"><i data-lucide="rotate-cw"></i></button>
+        </div>
+
+        <div class="canvas-wrap">
+            <div id="board"></div>
+
+            <div class="palette-bar">
+                <span class="palette-label" id="palette-label">Farger</span>
+                <div class="swatches" id="swatches"></div>
+                <div class="palette-sep"></div>
+                <input type="color" id="color-picker" title="Endre valgt farge">
+            </div>
+        </div>
+
+        <div class="design-side">
+            <div class="side-section">
+                <div class="side-title" id="title-pixels">Piksler</div>
+                <div class="pixel-stat">
+                    <div class="pixel-stat-num" id="stat-pixels">0</div>
+                    <div class="pixel-stat-label" id="pixels-drawn-label">piksler tegnet</div>
+                </div>
+            </div>
+
+            <div class="side-section">
+                <div class="side-title" id="title-colors">Farger i bruk</div>
+                <div class="color-chips" id="stat-colors">
+                    <div style="font-size:12px;color:var(--text-dim)">Ingen tegning ennå</div>
+                </div>
+            </div>
+
+            <div class="spacer"></div>
+
+            <div>
+                <button class="btn-next" id="next-btn">Se i 3D →</button>
+                <button class="btn-clear" id="clear-btn">🗑 Tøm brettet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SCREEN 2: PREVIEW ──────────────────────────────────── -->
+    <div class="screen" id="screen-preview">
+        <div class="preview-main">
+            <div id="container-3d"></div>
+            <div class="orbit-hint" id="orbit-hint">Venstreklikk: Roter · Scroll: Zoom · Høyreklikk: Flytt</div>
+        </div>
+
+        <div class="preview-side">
+            <div class="preview-heading" id="preview-heading">3D Forhåndsvisning</div>
+            <div class="preview-sub" id="preview-sub">Klar for Bambu Lab AMS-print</div>
+
+            <div class="side-title" id="title-thickness">Tykkelse</div>
+            <div class="range-row">
+                <span class="range-label" id="range-label">Utskriftshøyde</span>
+                <span class="range-val"><span id="thickness-val">0.6</span> mm</span>
+            </div>
+            <input type="range" id="thickness" min="0.2" max="5.0" step="0.2" value="0.6">
+            <div class="range-ticks"><span>0.2 mm</span><span>5.0 mm</span></div>
+
+            <div class="stat-row">
+                <div class="stat-big" id="preview-pixels">0</div>
+                <div class="stat-lbl" id="stat-lbl">piksler totalt</div>
+            </div>
+
+            <div class="side-section" style="margin-top:18px;">
+                <div class="side-title" id="title-dist">Fargefordeling</div>
+                <div class="filament-list" id="filament-list"></div>
+            </div>
+
+            <div class="side-section" style="margin-top:18px;">
+                <div class="side-title" id="title-scale">Pikselstørrelse</div>
+                <div class="range-row">
+                    <span class="range-label" id="label-pxw">Størrelse</span>
+                    <span class="range-val"><span id="px-size-x-val">5</span> mm</span>
+                </div>
+                <input type="range" id="px-size-x" min="1" max="5" step="1" value="5">
+                <div style="font-size:11px;color:var(--text-dim);margin-top:6px;" id="model-size-lbl">Modell: 160 × 160 mm</div>
+            </div>
+
+            <div class="spacer"></div>
+
+            <button class="btn-export"   id="export-btn">⬇️ Last ned .3MF</button>
+            <button class="btn-save-art" id="save-art-btn">💾 Lagre pikselkunst</button>
+            <button class="btn-back"     id="back-btn">← Tilbake til tegning</button>
+        </div>
+    </div>
+
+    <input type="file" id="file-input" accept=".json,.pixelart">
+
+    <footer class="app-footer">
+        Made by <a href="https://stianjohansen.no" target="_blank" rel="noopener">Stian Johansen</a>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
