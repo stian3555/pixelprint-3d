@@ -1,8 +1,13 @@
 # PixelPrint 3D
 
+[![Live Demo](https://img.shields.io/badge/live%20demo-pixelprint--3d.stian.cloud-6366f1?style=flat-square)](https://pixelprint-3d.stian.cloud)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22d3ee?style=flat-square)](LICENSE)
+
 A browser-based pixel art tool that exports ready-to-print `.3mf` files for **Bambu Lab** printers with AMS multi-color support.
 
 Draw pixel art, preview it in 3D, then download a `.3mf` file you can open directly in Bambu Studio — no plugins, no installation required.
+
+<!-- Add a screenshot or GIF here: ![screenshot](screenshot.png) -->
 
 ---
 
